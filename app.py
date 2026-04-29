@@ -1,14 +1,16 @@
 from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import numpy as np
-import json
 import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads'
+UPLOAD_FOLDER = '/tmp/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 ALLOWED_EXTENSIONS = {'csv', 'xlsx', 'xls'}
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -54,33 +56,17 @@ def upload():
         return jsonify({'error': 'Fichier vide'}), 400
     if not allowed_file(file.filename):
         return jsonify({'error': 'Format non supporté (CSV, XLSX seulement)'}), 400
-
     filename = secure_filename(file.filename)
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
-
     try:
-        if filename.endswith('.csv'):
-            df = pd.read_csv(filepath)
-        else:
-            df = pd.read_excel(filepath)
-
+        df = pd.read_csv(filepath) if filename.endswith('.csv') else pd.read_excel(filepath)
         df = df.dropna(how='all')
         stats, numeric_cols = compute_stats(df)
         charts = df_to_charts(df, numeric_cols)
-        preview = df.head(10).to_dict(orient='records')
-        columns = df.columns.tolist()
-
-        return jsonify({
-            'success': True,
-            'filename': filename,
-            'rows': len(df),
-            'columns': columns,
-            'numeric_cols': numeric_cols,
-            'stats': stats,
-            'charts': charts,
-            'preview': preview
-        })
+        return jsonify({'success': True, 'filename': filename, 'rows': len(df),
+            'columns': df.columns.tolist(), 'numeric_cols': numeric_cols,
+            'stats': stats, 'charts': charts, 'preview': df.head(10).to_dict(orient='records')})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -96,46 +82,37 @@ def manual():
             df[col] = pd.to_numeric(df[col], errors='ignore')
         stats, numeric_cols = compute_stats(df)
         charts = df_to_charts(df, numeric_cols)
-        preview = df.head(10).to_dict(orient='records')
-        return jsonify({
-            'success': True,
-            'filename': 'Saisie manuelle',
-            'rows': len(df),
-            'columns': df.columns.tolist(),
-            'numeric_cols': numeric_cols,
-            'stats': stats,
-            'charts': charts,
-            'preview': preview
-        })
+        return jsonify({'success': True, 'filename': 'Saisie manuelle', 'rows': len(df),
+            'columns': df.columns.tolist(), 'numeric_cols': numeric_cols,
+            'stats': stats, 'charts': charts, 'preview': df.head(10).to_dict(orient='records')})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/sample')
 def sample():
     np.random.seed(42)
-    n = 120
+    n = 150
+    villes = ['Yaoundé','Douala','Bafoussam','Garoua','Maroua','Bamenda','Ngaoundéré','Bertoua']
+    axes = ['N1 Yaoundé–Douala','N3 Yaoundé–Bafoussam','N1 Douala–Bafoussam','N6 Bafoussam–Bamenda','N14 Douala–Limbé','Urbaine Yaoundé','Urbaine Douala']
+    gravites = ['Léger','Moyen','Grave','Mortel']
+    causes = ['Excès de vitesse','Alcool','Distraction','Mauvais état route','Défaillance mécanique','Surcharge']
+    engins = ['Moto-taxi','Véhicule léger','Camion lourd','Bus/Car','Minibus']
     df = pd.DataFrame({
-        'Heure': np.tile(np.arange(0, 24), 5),
-        'Vehicules_par_heure': np.random.randint(20, 500, n),
-        'Vitesse_moyenne_kmh': np.random.normal(45, 15, n).clip(5, 130).round(1),
-        'Accidents': np.random.poisson(0.3, n),
-        'Duree_embouteillage_min': np.random.exponential(12, n).round(1),
-        'Taux_occupation_pct': np.random.uniform(10, 100, n).round(1),
+        'Ville': np.random.choice(villes, n),
+        'Axe': np.random.choice(axes, n),
+        'Heure': np.random.randint(0, 24, n),
+        'Vehicules_impliques': np.random.randint(1, 6, n),
+        'Blesses': np.random.randint(0, 10, n),
+        'Deces': np.random.poisson(0.8, n),
+        'Gravite': np.random.choice(gravites, n, p=[0.35,0.30,0.25,0.10]),
+        'Engin': np.random.choice(engins, n, p=[0.43,0.22,0.14,0.09,0.12]),
+        'Cause': np.random.choice(causes, n),
     })
     stats, numeric_cols = compute_stats(df)
     charts = df_to_charts(df, numeric_cols)
-    preview = df.head(10).to_dict(orient='records')
-    return jsonify({
-        'success': True,
-        'filename': 'Données exemple — TradiStatCameroun',
-        'rows': len(df),
-        'columns': df.columns.tolist(),
-        'numeric_cols': numeric_cols,
-        'stats': stats,
-        'charts': charts,
-        'preview': preview
-    })
+    return jsonify({'success': True, 'filename': 'Données exemple — TraficStatCameroun',
+        'rows': len(df), 'columns': df.columns.tolist(), 'numeric_cols': numeric_cols,
+        'stats': stats, 'charts': charts, 'preview': df.head(10).to_dict(orient='records')})
 
 if __name__ == '__main__':
-    os.makedirs('uploads', exist_ok=True)
-    app.run(debug=True)
+    app.run(debug=False)
