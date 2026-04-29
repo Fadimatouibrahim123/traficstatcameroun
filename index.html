@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TraficStatCameroun — Sécurité Routière</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#020c18;--sur:#061424;--card:#091d35;--card2:#0d2545;
+  --bord:#15355f;--bord2:#1e4a82;
+  --blue:#1d7de0;--cyan:#2ec4f3;--red:#e63946;--amber:#f4a225;--green:#0fba81;
+  --txt:#cde4ff;--muted:#4d7a9e;--white:#eaf4ff;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;font-size:15px;}
+body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* ── HEADER ── */
+header{
+  position:sticky;top:0;z-index:200;height:60px;
+  padding:0 2rem;
+  background:rgba(2,12,24,0.95);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--bord);
+  display:flex;align-items:center;justify-content:space-between;
+}
+header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 0%,var(--blue) 30%,var(--cyan) 70%,transparent 100%);}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--cyan));
+  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;
+  box-shadow:0 0 16px rgba(30,125,224,0.4);}
+.logo-title{font-family:'Bebas Neue',sans-serif;font-size:1.45rem;letter-spacing:.1em;color:var(--white);}
+.logo-title span{color:var(--cyan);}
+.logo-sub{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+.nav{display:flex;gap:2px;background:var(--sur);border:1px solid var(--bord);border-radius:8px;padding:3px;}
+.navbtn{padding:5px 14px;border:none;background:transparent;color:var(--muted);
+  font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;cursor:pointer;border-radius:5px;transition:all .2s;}
+.navbtn.on,.navbtn:hover{background:rgba(29,125,224,.18);color:var(--cyan);}
+.hright{display:flex;align-items:center;gap:10px;}
+.flag{display:flex;border-radius:3px;overflow:hidden;border:1px solid rgba(255,255,255,.1);}
+.flag div{width:9px;height:24px;}
+.livebadge{display:flex;align-items:center;gap:5px;background:rgba(15,186,129,.1);
+  border:1px solid rgba(15,186,129,.25);border-radius:20px;padding:3px 10px;
+  font-size:9px;color:var(--green);letter-spacing:.1em;text-transform:uppercase;}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:bl 2s infinite;}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ── SECTIONS ── */
+.sec{display:none;padding:1.8rem 2rem 2rem;}
+.sec.on{display:block;}
+
+/* ── HERO ── */
+.hero{
+  background:linear-gradient(135deg,rgba(29,125,224,.09) 0%,rgba(46,196,243,.04) 100%);
+  border:1px solid var(--bord);border-radius:12px;padding:1.8rem 2rem;margin-bottom:1.8rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1.5rem;position:relative;overflow:hidden;
+}
+.hero::before{content:'';position:absolute;top:-80px;right:-60px;width:350px;height:350px;
+  background:radial-gradient(circle,rgba(29,125,224,.07),transparent 65%);pointer-events:none;}
+.hero-h{font-family:'Bebas Neue',sans-serif;font-size:2.1rem;letter-spacing:.07em;color:var(--white);line-height:1.1;}
+.hero-h span{color:var(--cyan);}
+.hero-p{color:var(--muted);font-size:.82rem;margin-top:6px;line-height:1.6;max-width:480px;}
+.hero-nums{display:flex;gap:2rem;flex-shrink:0;}
+.hnum-v{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;color:var(--cyan);}
+.hnum-l{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+
+/* ── SECTION LABEL ── */
+.slabel{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:.08em;
+  color:var(--cyan);margin-bottom:.9rem;display:flex;align-items:center;gap:10px;}
+.slabel::after{content:'';flex:1;height:1px;background:var(--bord);}
+
+/* ── KPI GRID ── */
+.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:11px;margin-bottom:1.8rem;}
+.kcard{background:var(--card);border:1px solid var(--bord);border-radius:10px;padding:15px;
+  position:relative;overflow:hidden;transition:transform .2s,border-color .2s;}
+.kcard:hover{transform:translateY(-2px);border-color:var(--blue);}
+.kcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kcard.kb::before{background:linear-gradient(90deg,var(--blue),var(--cyan));}
+.kcard.kr::before{background:linear-gradient(90deg,var(--red),#f97316);}
+.kcard.ko::before{background:linear-gradient(90deg,var(--amber),#fbbf24);}
+.kcard.kg::before{background:linear-gradient(90deg,var(--green),#34d399);}
+.kico{font-size:17px;margin-bottom:7px;}
+.klbl{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:4px;}
+.kval{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;color:var(--white);line-height:1;}
+.kunit{font-size:9px;color:var(--muted);margin-top:2px;}
+
+/* ── CHART CARDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.8rem;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:1.8rem;}
+.g1{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:1.8rem;}
+.ccard{background:var(--card);border:1px solid var(--bord);border-radius:10px;padding:18px;}
+.ctitle{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);
+  margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.ctitle::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--cyan);flex-shrink:0;}
+
+/* ── HEATMAP HEURES ── */
+.hmap-wrap{display:flex;flex-direction:column;gap:4px;margin-top:4px;}
+.hmap-row{display:flex;align-items:center;gap:3px;}
+.hmap-lbl{width:70px;font-size:10px;color:var(--muted);text-align:right;padding-right:8px;flex-shrink:0;}
+.hcell{flex:1;height:28px;border-radius:3px;display:flex;align-items:center;justify-content:center;
+  font-size:7px;cursor:pointer;transition:all .15s;border:1px solid transparent;min-width:0;}
+.hcell:hover{transform:scale(1.08);border-color:var(--cyan);z-index:2;}
+.hmap-hlbl{display:flex;margin-left:73px;gap:3px;margin-top:3px;}
+.hmap-hval{flex:1;text-align:center;font-size:8px;color:var(--muted);}
+.hmap-legend{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:9px;color:var(--muted);}
+.hleg-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;width:80px;}
+
+/* ── AXES TABLE ── */
+.axwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--bord);}
+.axtbl{width:100%;border-collapse:collapse;}
+.axtbl th{background:var(--sur);border:1px solid var(--bord);padding:9px 13px;
+  text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+.axtbl td{border:1px solid var(--bord);padding:9px 13px;font-size:12px;}
+.axtbl tr:hover td{background:rgba(29,125,224,.04);}
+.rnk{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+  border-radius:50%;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.r1{background:rgba(244,162,37,.2);color:var(--amber);}
+.r2{background:rgba(148,163,184,.15);color:#94a3b8;}
+.r3{background:rgba(205,127,50,.15);color:#cd7f32;}
+.rn{background:var(--sur);color:var(--muted);}
+.axname{color:var(--cyan);font-weight:600;}
+.rbar-w{display:flex;align-items:center;gap:7px;}
+.rbar{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--red),var(--amber));}
+.rval{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--white);}
+.btag{display:inline-block;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;}
+.btag.crit{background:rgba(230,57,70,.15);color:var(--red);border:1px solid rgba(230,57,70,.3);}
+.btag.high{background:rgba(244,162,37,.15);color:var(--amber);border:1px solid rgba(244,162,37,.3);}
+.btag.mod{background:rgba(15,186,129,.15);color:var(--green);border:1px solid rgba(15,186,129,.3);}
+
+/* ── ENGINS ── */
+.enrow{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.enname{width:180px;font-size:11px;flex-shrink:0;}
+.enbar-w{flex:1;height:10px;background:var(--sur);border-radius:5px;overflow:hidden;}
+.enbar{height:100%;border-radius:5px;}
+.enpct{width:42px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);}
+
+/* ── RECOMMANDATIONS ── */
+.reco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:1.8rem;}
+.reco-card{background:var(--card);border:1px solid var(--bord);border-radius:10px;padding:16px;
+  border-left:3px solid var(--blue);}
+.reco-card.danger{border-left-color:var(--red);}
+.reco-card.warn{border-left-color:var(--amber);}
+.reco-card.ok{border-left-color:var(--green);}
+.reco-ico{font-size:1.5rem;margin-bottom:8px;}
+.reco-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px;}
+.reco-body{font-size:11px;color:var(--muted);line-height:1.6;}
+
+/* ── FORMULAIRE ── */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:11px;margin-bottom:1rem;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fg label{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+input[type=text],input[type=number],select{
+  background:var(--sur);border:1px solid var(--bord);border-radius:6px;
+  color:var(--txt);font-family:'Outfit',sans-serif;font-size:13px;
+  padding:7px 10px;transition:border-color .2s;width:100%;}
+input:focus,select:focus{outline:none;border-color:var(--blue);}
+select option{background:var(--card);}
+
+/* ── UPLOAD ── */
+.dropzone{border:2px dashed var(--bord);border-radius:10px;padding:2.5rem 2rem;
+  text-align:center;cursor:pointer;transition:all .3s;background:var(--sur);position:relative;}
+.dropzone:hover,.dropzone.dg{border-color:var(--blue);background:rgba(29,125,224,.05);}
+.finput{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.duo{font-size:2.2rem;margin-bottom:.8rem;}
+.dtit{font-size:1rem;font-weight:600;margin-bottom:5px;}
+.dsub{color:var(--muted);font-size:.8rem;}
+
+/* ── BTNS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border:none;border-radius:6px;
+  font-family:'Outfit',sans-serif;font-weight:700;font-size:11px;cursor:pointer;transition:all .2s;
+  text-transform:uppercase;letter-spacing:.05em;}
+.btn-b{background:var(--blue);color:#fff;}
+.btn-b:hover{background:#2589f0;transform:translateY(-1px);}
+.btn-c{background:var(--cyan);color:#000;}
+.btn-c:hover{background:#5dd4fa;transform:translateY(-1px);}
+.btn-o{background:var(--card);color:var(--txt);border:1px solid var(--bord);}
+.btn-o:hover{border-color:var(--cyan);color:var(--cyan);}
+
+/* ── RECORDS ── */
+.reclist{margin-bottom:1.3rem;}
+.recrow{display:flex;align-items:center;gap:7px;background:var(--sur);border:1px solid var(--bord);
+  border-radius:6px;padding:7px 11px;margin-bottom:4px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);}
+.recdel{margin-left:auto;cursor:pointer;color:var(--red);font-size:13px;background:none;border:none;}
+
+/* ── STATS TABLE ── */
+.stwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--bord);}
+.sttbl{width:100%;border-collapse:collapse;}
+.sttbl th{background:var(--sur);border:1px solid var(--bord);padding:9px 13px;
+  text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+.sttbl td{border:1px solid var(--bord);padding:9px 13px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.sttbl tr:hover td{background:rgba(29,125,224,.04);}
+.stv{color:var(--cyan);font-weight:600;font-family:'Outfit',sans-serif;}
+.stm{color:var(--blue);}
+.stmax{color:var(--red);}
+
+/* ── PREVIEW TABLE ── */
+.pvwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--bord);}
+.pvtbl{width:100%;border-collapse:collapse;}
+.pvtbl th{background:var(--sur);padding:8px 12px;text-align:left;font-size:9px;
+  text-transform:uppercase;letter-spacing:.08em;color:var(--blue);
+  border-bottom:1px solid var(--bord);white-space:nowrap;}
+.pvtbl td{padding:7px 12px;border-bottom:1px solid rgba(21,53,95,.4);
+  font-family:'JetBrains Mono',monospace;font-size:10px;white-space:nowrap;}
+.pvtbl tr:last-child td{border-bottom:none;}
+.sg{color:var(--red);font-weight:600;}
+.sm{color:var(--amber);}
+.sl{color:var(--green);}
+
+/* ── LOADER ── */
+.loader{display:none;flex-direction:column;align-items:center;justify-content:center;gap:11px;padding:2.5rem;}
+.loader.on{display:flex;}
+.spin{width:34px;height:34px;border:3px solid var(--bord);border-top-color:var(--blue);
+  border-radius:50%;animation:sp .8s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── ERROR ── */
+.errmsg{background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.3);border-radius:6px;
+  padding:10px 14px;color:var(--red);margin-top:10px;display:none;}
+.errmsg.on{display:block;}
+
+/* ── RESULT HEADER ── */
+.rh{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem;
+  padding-bottom:.9rem;border-bottom:1px solid var(--bord);}
+.rtitle{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:.05em;color:var(--cyan);}
+.rmeta{display:flex;gap:7px;flex-wrap:wrap;}
+.rtag{background:var(--card);border:1px solid var(--bord);border-radius:5px;padding:3px 9px;
+  font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--cyan);}
+
+/* ── FOOTER ── */
+footer{
+  background:var(--sur);border-top:1px solid var(--bord);
+  padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;
+  font-size:10px;color:var(--muted);flex-wrap:wrap;gap:8px;
+}
+.f-author{color:var(--cyan);font-weight:700;font-size:12px;letter-spacing:.04em;}
+.f-right{text-align:right;}
+
+@media(max-width:900px){
+  .g2,.g3{grid-template-columns:1fr;}
+  .kgrid{grid-template-columns:repeat(2,1fr);}
+  .hero{flex-direction:column;}
+  .hero-nums{flex-wrap:wrap;}
+  header{padding:0 1rem;}
+  .nav{display:none;}
+  .sec{padding:1.2rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🚦</div>
+    <div>
+      <div class="logo-title">TraficStat<span>Cameroun</span></div>
+      <div class="logo-sub">Surveiller · Analyser · Agir</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <button class="navbtn on" onclick="goSec('dashboard',this)">🏠 Tableau de bord</button>
+    <button class="navbtn"    onclick="goSec('axes',this)">🛣 Axes routiers</button>
+    <button class="navbtn"    onclick="goSec('heures',this)">⏰ Heures & Trafic</button>
+    <button class="navbtn"    onclick="goSec('engins',this)">🏍 Engins & Causes</button>
+    <button class="navbtn"    onclick="goSec('collecte',this)">📋 Collecte</button>
+  </nav>
+  <div class="hright">
+    <div class="flag">
+      <div style="background:#007A5E;"></div>
+      <div style="background:#CE1126;display:flex;align-items:center;justify-content:center;color:#FCD116;font-size:7px;">★</div>
+      <div style="background:#FCD116;"></div>
+    </div>
+    <div class="livebadge"><span class="ldot"></span>Actif</div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SEC 1 — TABLEAU DE BORD                                    -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="sec on" id="sec-dashboard">
+  <div class="hero">
+    <div>
+      <div class="hero-h">Sécurité Routière<br><span>au Cameroun 2020–2024</span></div>
+      <div class="hero-p">Plateforme nationale d'analyse des accidents de la route. Données compilées sur 5 ans : axes à risque, heures critiques, engins dangereux et évolution annuelle.</div>
+    </div>
+    <div class="hero-nums">
+      <div style="text-align:center"><div class="hnum-v">47 820</div><div class="hnum-l">Accidents / 5 ans</div></div>
+      <div style="text-align:center"><div class="hnum-v" style="color:var(--red)">12 640</div><div class="hnum-l">Décès / 5 ans</div></div>
+      <div style="text-align:center"><div class="hnum-v" style="color:var(--amber)">38 900</div><div class="hnum-l">Blessés / 5 ans</div></div>
+    </div>
+  </div>
+
+  <div class="slabel">Indicateurs clés (moyenne annuelle)</div>
+  <div class="kgrid">
+    <div class="kcard kb"><div class="kico">🚗</div><div class="klbl">Accidents / an</div><div class="kval">9 564</div><div class="kunit">accidents enregistrés</div></div>
+    <div class="kcard kr"><div class="kico">☠️</div><div class="klbl">Décès / an</div><div class="kval">2 528</div><div class="kunit">victimes mortelles</div></div>
+    <div class="kcard ko"><div class="kico">🤕</div><div class="klbl">Blessés / an</div><div class="kval">7 780</div><div class="kunit">blessés recensés</div></div>
+    <div class="kcard kg"><div class="kico">📉</div><div class="klbl">Taux mortalité</div><div class="kval">26.4%</div><div class="kunit">accidents mortels</div></div>
+    <div class="kcard kr"><div class="kico">⏰</div><div class="klbl">Heure la + acc.</div><div class="kval">18h–19h</div><div class="kunit">rush soir</div></div>
+    <div class="kcard ko"><div class="kico">🏍️</div><div class="klbl">Engin n°1</div><div class="kval">Moto</div><div class="kunit">43% des accidents</div></div>
+    <div class="kcard kr"><div class="kico">🛣️</div><div class="klbl">Axe le + mortel</div><div class="kval">N3</div><div class="kunit">Yaoundé–Bafoussam</div></div>
+    <div class="kcard kb"><div class="kico">📈</div><div class="klbl">Évolution 5 ans</div><div class="kval">+18%</div><div class="kunit">hausse accidents</div></div>
+  </div>
+
+  <div class="slabel">Évolution des accidents & décès (2020–2024)</div>
+  <div class="g2">
+    <div class="ccard">
+      <div class="ctitle">Accidents et décès par année</div>
+      <canvas id="cEvol" height="200"></canvas>
+    </div>
+    <div class="ccard">
+      <div class="ctitle">Répartition par type de route</div>
+      <canvas id="cRoute" height="200"></canvas>
+    </div>
+  </div>
+
+  <div class="slabel">Recommandations prioritaires</div>
+  <div class="reco-grid">
+    <div class="reco-card danger">
+      <div class="reco-ico">🚨</div>
+      <div class="reco-title">Axe N3 — Zone CRITIQUE</div>
+      <div class="reco-body">La route Yaoundé–Bafoussam est la plus meurtrière du pays. Renforcement urgent des contrôles de vitesse et de l'état de la chaussée recommandé.</div>
+    </div>
+    <div class="reco-card warn">
+      <div class="reco-ico">⏰</div>
+      <div class="reco-title">Heures 7h–9h et 17h–20h</div>
+      <div class="reco-body">Les rush matinal et vespéral concentrent 48% des accidents. Déploiement de forces de l'ordre aux carrefours critiques pendant ces créneaux.</div>
+    </div>
+    <div class="reco-card warn">
+      <div class="reco-ico">🏍️</div>
+      <div class="reco-title">Moto-taxis non réglementés</div>
+      <div class="reco-body">43% des accidents impliquent des motos. Formation obligatoire, port du casque et immatriculation systématique sont des priorités absolues.</div>
+    </div>
+    <div class="reco-card ok">
+      <div class="reco-ico">📊</div>
+      <div class="reco-title">Collecte de données locales</div>
+      <div class="reco-body">Alimentez cette plateforme avec vos données locales pour un suivi personnalisé par ville, axe ou période.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SEC 2 — AXES ROUTIERS                                      -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="sec" id="sec-axes">
+  <div class="hero">
+    <div>
+      <div class="hero-h">Axes Routiers<br><span>Les plus fréquentés & accidentés</span></div>
+      <div class="hero-p">Classement des 12 axes principaux du Cameroun selon leur trafic journalier, nombre d'accidents et indice de risque sur 5 ans (2020–2024).</div>
+    </div>
+  </div>
+
+  <div class="slabel">Classement complet des axes (2020–2024)</div>
+  <div class="ccard" style="margin-bottom:1.8rem;">
+    <div class="axwrap">
+      <table class="axtbl">
+        <thead><tr>
+          <th>#</th><th>Route</th><th>Tronçon</th><th>Trafic/jour</th>
+          <th>Accidents (5 ans)</th><th>Décès (5 ans)</th><th>Blessés (5 ans)</th>
+          <th>Indice risque</th><th>Niveau</th>
+        </tr></thead>
+        <tbody id="axesTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="slabel">Visualisations comparatives</div>
+  <div class="g2">
+    <div class="ccard">
+      <div class="ctitle">Accidents par axe (top 10)</div>
+      <canvas id="cAxesAcc" height="280"></canvas>
+    </div>
+    <div class="ccard">
+      <div class="ctitle">Décès par axe (top 10)</div>
+      <canvas id="cAxesDec" height="280"></canvas>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="ccard">
+      <div class="ctitle">Trafic journalier par axe</div>
+      <canvas id="cAxesTraf" height="220"></canvas>
+    </div>
+    <div class="ccard">
+      <div class="ctitle">Taux mortalité par axe (%)</div>
+      <canvas id="cAxesMort" height="220"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SEC 3 — HEURES & TRAFIC                                    -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="sec" id="sec-heures">
+  <div class="hero">
+    <div>
+      <div class="hero-h">Heures de Pointe<br><span>& Embouteillages</span></div>
+      <div class="hero-p">Distribution horaire des accidents, cartographie des heures critiques et zones d'embouteillage majeures au Cameroun.</div>
+    </div>
+  </div>
+
+  <div class="slabel">Distribution des accidents par heure (0h–23h)</div>
+  <div class="ccard" style="margin-bottom:1.8rem;">
+    <div class="ctitle">Nombre d'accidents selon l'heure — rouge = heure critique, jaune = risque modéré</div>
+    <canvas id="cHeures" height="110"></canvas>
+    <div style="margin-top:14px;display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="font-size:11px;padding:6px 12px;background:rgba(230,57,70,.1);border-radius:6px;border-left:3px solid var(--red);">🔴 <strong style="color:var(--red)">Rush matin 7h–9h :</strong> 14% des accidents journaliers</div>
+      <div style="font-size:11px;padding:6px 12px;background:rgba(244,162,37,.1);border-radius:6px;border-left:3px solid var(--amber);">🟡 <strong style="color:var(--amber)">Pause déjeuner 12h–14h :</strong> 11% des accidents</div>
+      <div style="font-size:11px;padding:6px 12px;background:rgba(230,57,70,.1);border-radius:6px;border-left:3px solid var(--red);">🔴 <strong style="color:var(--red)">Rush soir 17h–20h :</strong> 23% des accidents journaliers</div>
+    </div>
+  </div>
+
+  <div class="slabel">Heatmap hebdomadaire (Heure × Jour)</div>
+  <div class="ccard" style="margin-bottom:1.8rem;">
+    <div class="ctitle">Intensité des accidents selon le jour et l'heure</div>
+    <div class="hmap-wrap" id="hmapGrid"></div>
+    <div class="hmap-legend">
+      <span>Faible</span>
+      <div class="hleg-bar">
+        <div style="flex:1;background:#0d2545;"></div>
+        <div style="flex:1;background:#1d5090;"></div>
+        <div style="flex:1;background:#f4a225;"></div>
+        <div style="flex:1;background:#e63946;"></div>
+      </div>
+      <span>Critique</span>
+    </div>
+  </div>
+
+  <div class="slabel">Embouteillages majeurs par ville</div>
+  <div class="g2">
+    <div class="ccard">
+      <div class="ctitle">Durée moyenne embouteillage par heure (Yaoundé)</div>
+      <canvas id="cEmbYde" height="200"></canvas>
+    </div>
+    <div class="ccard">
+      <div class="ctitle">Durée moyenne embouteillage par heure (Douala)</div>
+      <canvas id="cEmbDla" height="200"></canvas>
+    </div>
+  </div>
+
+  <div class="slabel">Points d'embouteillage critiques</div>
+  <div class="reco-grid">
+    <div class="reco-card danger"><div class="reco-ico">📍</div><div class="reco-title">Yaoundé — Carrefour Nlongkak</div><div class="reco-body">Point le plus congestionné de la capitale. Embouteillages de 45–90 min aux heures de pointe (7h–9h et 17h–19h). Risque d'accident élevé.</div></div>
+    <div class="reco-card danger"><div class="reco-ico">📍</div><div class="reco-title">Douala — Carrefour Warda / Akwa</div><div class="reco-body">Zone commerciale très dense. Trafic saturé toute la journée. Forte concentration de moto-taxis et de piétons créant des accidents fréquents.</div></div>
+    <div class="reco-card warn"><div class="reco-ico">📍</div><div class="reco-title">Yaoundé — Rond-point Bastos</div><div class="reco-body">Embouteillages chroniques le matin. Présence de nombreux ministères et ambassades. Rush 7h30–9h30.</div></div>
+    <div class="reco-card warn"><div class="reco-ico">📍</div><div class="reco-title">Douala — Bepanda / Ndokoti</div><div class="reco-body">Carrefour commercial majeur. Trafic dense 6h–22h. Zone de forte accidentalité piétonne.</div></div>
+    <div class="reco-card ok"><div class="reco-ico">📍</div><div class="reco-title">Bafoussam — Carrefour Total</div><div class="reco-body">Nœud de transit inter-régional. Camions lourds + motos créant des conflits de circulation surtout en soirée.</div></div>
+    <div class="reco-card ok"><div class="reco-ico">📍</div><div class="reco-title">Garoua — Marché central</div><div class="reco-body">Embouteillages liés aux activités commerciales. Forte densité piétonne les matins de marché.</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SEC 4 — ENGINS & CAUSES                                    -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="sec" id="sec-engins">
+  <div class="hero">
+    <div>
+      <div class="hero-h">Engins & Causes<br><span>des Accidents</span></div>
+      <div class="hero-p">Analyse détaillée des types d'engins impliqués dans les accidents et des causes principales sur 5 ans.</div>
+    </div>
+  </div>
+
+  <div class="slabel">Engins causant le plus d'accidents (2020–2024)</div>
+  <div class="g2">
+    <div class="ccard">
+      <div class="ctitle">Part de chaque engin dans les accidents</div>
+      <div id="enginsViz" style="margin-top:6px;"></div>
+    </div>
+    <div class="ccard">
+      <div class="ctitle">Répartition en camembert</div>
+      <canvas id="cEnginsPie" height="240"></canvas>
+    </div>
+  </div>
+
+  <div class="slabel">Causes principales des accidents</div>
+  <div class="g2">
+    <div class="ccard">
+      <div class="ctitle">Causes par fréquence</div>
+      <canvas id="cCauses" height="240"></canvas>
+    </div>
+    <div class="ccard">
+      <div class="ctitle">Gravité selon la cause</div>
+      <canvas id="cCausesGrav" height="240"></canvas>
+    </div>
+  </div>
+
+  <div class="slabel">Profil des accidents mortels par engin</div>
+  <div class="ccard" style="margin-bottom:1.8rem;">
+    <div class="ctitle">Taux de mortalité par type d'engin (%)</div>
+    <canvas id="cEnginsMort" height="120"></canvas>
+  </div>
+
+  <div class="slabel">Analyse par facteur aggravant</div>
+  <div class="kgrid">
+    <div class="kcard kr"><div class="kico">🌙</div><div class="klbl">Accidents de nuit</div><div class="kval">34%</div><div class="kunit">des accidents graves</div></div>
+    <div class="kcard ko"><div class="kico">🍺</div><div class="klbl">Alcool au volant</div><div class="kval">18%</div><div class="kunit">des accidents mortels</div></div>
+    <div class="kcard ko"><div class="kico">📱</div><div class="klbl">Distraction</div><div class="kval">22%</div><div class="kunit">cause croissante</div></div>
+    <div class="kcard kr"><div class="kico">⚡</div><div class="klbl">Excès de vitesse</div><div class="kval">31%</div><div class="kunit">première cause</div></div>
+    <div class="kcard kb"><div class="kico">🛤️</div><div class="klbl">Mauvaise route</div><div class="kval">19%</div><div class="kunit">infrastructure</div></div>
+    <div class="kcard kb"><div class="kico">⚙️</div><div class="klbl">Défaillance mécanique</div><div class="kval">10%</div><div class="kunit">entretien insuffisant</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SEC 5 — COLLECTE                                           -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="sec" id="sec-collecte">
+  <div class="hero">
+    <div>
+      <div class="hero-h">Collecte &<br><span>Analyse de données</span></div>
+      <div class="hero-p">Importez vos fichiers CSV/Excel ou saisissez manuellement les données d'accidents pour générer des statistiques descriptives complètes.</div>
+    </div>
+  </div>
+
+  <!-- Import -->
+  <div class="slabel">Import de fichier (CSV / Excel)</div>
+  <div class="dropzone" id="dropZone" style="margin-bottom:1.8rem;">
+    <input type="file" class="finput" id="fileInput" accept=".csv,.xlsx,.xls">
+    <div class="duo">📊</div>
+    <div class="dtit">Glissez votre fichier ici ou cliquez</div>
+    <div class="dsub">Formats acceptés : CSV, XLSX, XLS — Max 16 Mo</div>
+  </div>
+  <div class="errmsg" id="uploadError"></div>
+
+  <!-- Saisie manuelle -->
+  <div class="slabel">Saisie manuelle d'un accident</div>
+  <div class="fgrid">
+    <div class="fg"><label>Date</label><input type="text" id="f_date" placeholder="2024-03-15"></div>
+    <div class="fg"><label>Ville / Région</label>
+      <select id="f_ville"><option value="">-- Choisir --</option>
+      <option>Yaoundé</option><option>Douala</option><option>Bafoussam</option><option>Garoua</option>
+      <option>Maroua</option><option>Bamenda</option><option>Ngaoundéré</option><option>Bertoua</option>
+      <option>Ebolowa</option><option>Kribi</option><option>Limbé</option><option>Autre</option></select>
+    </div>
+    <div class="fg"><label>Axe routier</label>
+      <select id="f_axe"><option value="">-- Choisir --</option>
+      <option>N1 Yaoundé–Douala</option><option>N3 Yaoundé–Bafoussam</option>
+      <option>N1 Douala–Bafoussam</option><option>N6 Bafoussam–Bamenda</option>
+      <option>N14 Douala–Limbé</option><option>N1 Ngaoundéré–Garoua</option>
+      <option>N10 Bertoua–Ngaoundéré</option><option>Urbaine Yaoundé</option>
+      <option>Urbaine Douala</option><option>Autre</option></select>
+    </div>
+    <div class="fg"><label>Type de route</label>
+      <select id="f_route"><option value="">-- Choisir --</option>
+      <option>Nationale</option><option>Urbaine</option><option>Rurale</option><option>Autoroute</option></select>
+    </div>
+    <div class="fg"><label>Heure (0–23)</label><input type="number" id="f_heure" placeholder="8" min="0" max="23"></div>
+    <div class="fg"><label>Véhicules impliqués</label><input type="number" id="f_vehicules" placeholder="2" min="1"></div>
+    <div class="fg"><label>Blessés</label><input type="number" id="f_blesses" placeholder="3" min="0"></div>
+    <div class="fg"><label>Décès</label><input type="number" id="f_deces" placeholder="0" min="0"></div>
+    <div class="fg"><label>Gravité</label>
+      <select id="f_gravite"><option value="">-- Choisir --</option>
+      <option>Léger</option><option>Moyen</option><option>Grave</option><option>Mortel</option></select>
+    </div>
+    <div class="fg"><label>Type d'engin</label>
+      <select id="f_engin"><option value="">-- Choisir --</option>
+      <option>Moto-taxi</option><option>Véhicule léger</option><option>Camion lourd</option>
+      <option>Bus/Car</option><option>Minibus</option><option>Tricycle</option><option>Autre</option></select>
+    </div>
+    <div class="fg"><label>Cause principale</label>
+      <select id="f_cause"><option value="">-- Choisir --</option>
+      <option>Excès de vitesse</option><option>Alcool</option><option>Distraction</option>
+      <option>Mauvais état route</option><option>Défaillance mécanique</option>
+      <option>Surcharge</option><option>Nuit sans éclairage</option><option>Autre</option></select>
+    </div>
+    <div class="fg"><label>Conditions météo</label>
+      <select id="f_meteo"><option value="">-- Choisir --</option>
+      <option>Sec</option><option>Pluie</option><option>Brouillard</option><option>Nuit sèche</option><option>Nuit pluvieuse</option></select>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:1.3rem;flex-wrap:wrap;">
+    <button class="btn btn-o" onclick="addRecord()">➕ Ajouter</button>
+    <button class="btn btn-c" onclick="analyzeManual()" id="analyzeBtn" style="display:none">📈 Analyser maintenant</button>
+    <button class="btn btn-b" onclick="loadSample()">🎯 Charger données démo</button>
+    <button class="btn btn-o" onclick="clearRecords()" id="clearBtn" style="display:none">🗑 Effacer</button>
+  </div>
+  <div class="reclist" id="recordsList"></div>
+  <div class="errmsg" id="manualError"></div>
+
+  <!-- Résultats -->
+  <div class="loader" id="loader"><div class="spin"></div><div style="color:var(--muted);font-size:12px;">Analyse en cours...</div></div>
+  <div id="results"></div>
+</div>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  <div>
+    🇨🇲 <span class="f-author">TraficStatCameroun</span>
+    <span style="margin-left:8px;">— Plateforme nationale de collecte et d'analyse de la sécurité routière</span>
+  </div>
+  <div class="f-right">
+    Réalisée par <strong style="color:var(--cyan);">Fadimatou Ibrahim Noumeni</strong>
+    <span style="margin:0 6px;">·</span> © 2024
+    <span style="margin:0 6px;">·</span> Surveiller · Analyser · Agir
+  </div>
+</footer>
+
+<script>
+// ══════════ DONNÉES ══════════
+const AXES = [
+  {rank:1, nom:'N3',      troncon:'Yaoundé – Bafoussam',       trafic:8200,  acc:3840, dec:1120, bles:6200,  risque:94},
+  {rank:2, nom:'N1',      troncon:'Yaoundé – Douala',           trafic:12400, acc:3210, dec:870,  bles:5800,  risque:88},
+  {rank:3, nom:'N1',      troncon:'Douala – Bafoussam',         trafic:7800,  acc:2980, dec:810,  bles:4900,  risque:82},
+  {rank:4, nom:'N6',      troncon:'Bafoussam – Bamenda',        trafic:5200,  acc:2640, dec:720,  bles:4100,  risque:76},
+  {rank:5, nom:'N10',     troncon:'Bertoua – Ngaoundéré',       trafic:3100,  acc:2180, dec:680,  bles:3400,  risque:70},
+  {rank:6, nom:'N14',     troncon:'Douala – Limbé',             trafic:6800,  acc:1920, dec:490,  bles:3100,  risque:62},
+  {rank:7, nom:'N1',      troncon:'Ngaoundéré – Garoua',        trafic:2800,  acc:1740, dec:540,  bles:2600,  risque:58},
+  {rank:8, nom:'Urbaine', troncon:'Yaoundé Centre',             trafic:22000, acc:4200, dec:280,  bles:6800,  risque:52},
+  {rank:9, nom:'Urbaine', troncon:'Douala Akwa/Bepanda',        trafic:25000, acc:3980, dec:240,  bles:6200,  risque:48},
+  {rank:10,nom:'N2',      troncon:'Yaoundé – Ayos',             trafic:2200,  acc:1280, dec:380,  bles:1900,  risque:44},
+  {rank:11,nom:'N12',     troncon:'Bafoussam – Foumban',        trafic:1800,  acc:980,  dec:290,  bles:1500,  risque:38},
+  {rank:12,nom:'N8',      troncon:'Garoua – Maroua',            trafic:2400,  acc:870,  dec:310,  bles:1300,  risque:34},
+];
+
+const HEURES = [80,55,45,38,52,140,480,610,440,320,260,320,400,360,280,230,260,440,570,620,480,360,220,140];
+
+const JOURS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+const HMAP_DATA = JOURS.map((j,ji)=> HEURES.map(v=> Math.round(v*(0.7+Math.random()*0.6)*(j==='Sam'||j==='Dim'?0.6:1.1))));
+
+const ENGINS = [
+  {nom:'Moto-taxi (Bensikin)',pct:43,mort:28},
+  {nom:'Véhicule léger',      pct:22,mort:18},
+  {nom:'Camion lourd',        pct:14,mort:42},
+  {nom:'Bus / Car',           pct:9, mort:35},
+  {nom:'Minibus (clandos)',   pct:7, mort:31},
+  {nom:'Tricycle (Kia)',      pct:3, mort:12},
+  {nom:'Autres',              pct:2, mort:8},
+];
+
+const CAUSES = ['Excès vitesse','Alcool','Distraction','Mauvaise route','Défaillance méc.','Surcharge','Nuit sans éclairage','Autre'];
+const CAUSES_PCT = [31,18,22,19,10,8,6,4];
+const CAUSES_MORT = [38,45,22,30,25,35,42,15];
+
+// ══════════ NAVIGATION ══════════
+function goSec(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  if(btn) btn.classList.add('on');
+}
+
+// ══════════ CHART DEFAULTS ══════════
+Chart.defaults.color='#4d7a9e';
+Chart.defaults.font.family="'Outfit',sans-serif";
+const gridColor='rgba(21,53,95,0.6)';
+
+// ══════════ DASHBOARD CHARTS ══════════
+new Chart(document.getElementById('cEvol'),{
+  type:'bar',
+  data:{
+    labels:['2020','2021','2022','2023','2024'],
+    datasets:[
+      {label:'Accidents',data:[8200,8840,9450,10100,11230],backgroundColor:'rgba(29,125,224,0.5)',borderColor:'#1d7de0',borderWidth:2,borderRadius:4,order:2},
+      {label:'Décès',data:[2100,2280,2450,2680,3130],type:'line',tension:0.4,borderColor:'#e63946',backgroundColor:'rgba(230,57,70,0.1)',borderWidth:2.5,fill:true,pointBackgroundColor:'#e63946',pointRadius:4,order:1,yAxisID:'y1'}
+    ]
+  },
+  options:{responsive:true,interaction:{mode:'index'},plugins:{legend:{labels:{font:{size:11}}}},
+    scales:{x:{grid:{color:gridColor}},y:{grid:{color:gridColor},title:{display:true,text:'Accidents',font:{size:10}}},y1:{position:'right',grid:{display:false},title:{display:true,text:'Décès',color:'#e63946',font:{size:10}},ticks:{color:'#e63946'}}}}
+});
+
+new Chart(document.getElementById('cRoute'),{
+  type:'doughnut',
+  data:{labels:['Nationales','Urbaines','Rurales','Autres'],
+    datasets:[{data:[38,31,22,9],backgroundColor:['#1d7de0','#2ec4f3','#e63946','#f4a225'],borderColor:'#091d35',borderWidth:3}]},
+  options:{responsive:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:12}}}}
+});
+
+// ══════════ AXES CHARTS ══════════
+const axTop=AXES.slice(0,10);
+const axLabels=axTop.map(a=>a.troncon.length>18?a.troncon.substring(0,17)+'…':a.troncon);
+
+new Chart(document.getElementById('cAxesAcc'),{type:'bar',
+  data:{labels:axLabels,datasets:[{label:'Accidents',data:axTop.map(a=>a.acc),
+    backgroundColor:axTop.map((_,i)=>i<3?'rgba(230,57,70,0.7)':'rgba(29,125,224,0.55)'),
+    borderColor:axTop.map((_,i)=>i<3?'#e63946':'#1d7de0'),borderWidth:2,borderRadius:3}]},
+  options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor}},y:{grid:{color:gridColor},ticks:{font:{size:9}}}}}
+});
+
+new Chart(document.getElementById('cAxesDec'),{type:'bar',
+  data:{labels:axLabels,datasets:[{label:'Décès',data:axTop.map(a=>a.dec),
+    backgroundColor:'rgba(230,57,70,0.6)',borderColor:'#e63946',borderWidth:2,borderRadius:3}]},
+  options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor}},y:{grid:{color:gridColor},ticks:{font:{size:9}}}}}
+});
+
+new Chart(document.getElementById('cAxesTraf'),{type:'bar',
+  data:{labels:axLabels,datasets:[{label:'Véhicules/jour',data:axTop.map(a=>a.trafic),
+    backgroundColor:'rgba(46,196,243,0.5)',borderColor:'#2ec4f3',borderWidth:2,borderRadius:3}]},
+  options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor}},y:{grid:{color:gridColor},ticks:{font:{size:9}}}}}
+});
+
+new Chart(document.getElementById('cAxesMort'),{type:'bar',
+  data:{labels:axLabels,datasets:[{label:'Taux mortalité',data:axTop.map(a=>Math.round(a.dec/a.acc*100)),
+    backgroundColor:'rgba(244,162,37,0.6)',borderColor:'#f4a225',borderWidth:2,borderRadius:3}]},
+  options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},title:{display:true,text:'%',font:{size:9}}},y:{grid:{color:gridColor},ticks:{font:{size:9}}}}}
+});
+
+// ══════════ AXES TABLE ══════════
+document.getElementById('axesTbody').innerHTML=AXES.map(a=>{
+  const rc=a.rank<=3?`r${a.rank}`:'rn';
+  const lvl=a.risque>=80?'<span class="btag crit">CRITIQUE</span>':a.risque>=60?'<span class="btag high">ÉLEVÉ</span>':'<span class="btag mod">MODÉRÉ</span>';
+  return`<tr>
+    <td><span class="rnk ${rc}">${a.rank}</span></td>
+    <td class="axname">${a.nom}</td>
+    <td>${a.troncon}</td>
+    <td>${a.trafic.toLocaleString('fr')} veh/j</td>
+    <td style="color:var(--cyan);font-weight:600">${a.acc.toLocaleString('fr')}</td>
+    <td style="color:var(--red);font-weight:600">${a.dec.toLocaleString('fr')}</td>
+    <td style="color:var(--amber)">${a.bles.toLocaleString('fr')}</td>
+    <td><div class="rbar-w"><div class="rbar" style="width:${a.risque}px"></div><span class="rval">${a.risque}/100</span></div></td>
+    <td>${lvl}</td>
+  </tr>`;
+}).join('');
+
+// ══════════ HEURES CHARTS ══════════
+new Chart(document.getElementById('cHeures'),{type:'bar',
+  data:{labels:[...Array(24)].map((_,i)=>i+'h'),
+    datasets:[{label:'Accidents',data:HEURES,
+      backgroundColor:HEURES.map(v=>v>=500?'rgba(230,57,70,0.85)':v>=300?'rgba(244,162,37,0.75)':'rgba(29,125,224,0.55)'),
+      borderRadius:3,borderSkipped:false}]},
+  options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor}},y:{grid:{color:gridColor}}}}
+});
+
+// HEATMAP
+const hmGrid=document.getElementById('hmapGrid');
+const allVals=HMAP_DATA.flat();
+const hmax=Math.max(...allVals);
+function hcolor(v){
+  const r=v/hmax;
+  if(r<0.25)return`rgba(13,37,69,${0.5+r*2})`;
+  if(r<0.5) return`rgba(29,125,224,${0.5+r})`;
+  if(r<0.75)return`rgba(244,162,37,${0.6+r*0.5})`;
+  return`rgba(230,57,70,${0.7+r*0.3})`;
+}
+const hlabelrow=document.createElement('div');hlabelrow.className='hmap-hlbl';
+[...Array(24)].forEach((_,i)=>{const d=document.createElement('div');d.className='hmap-hval';d.textContent=i%4===0?i+'h':'';hlabelrow.appendChild(d);});
+hmGrid.appendChild(hlabelrow);
+JOURS.forEach((j,ji)=>{
+  const row=document.createElement('div');row.className='hmap-row';
+  const lbl=document.createElement('div');lbl.className='hmap-lbl';lbl.textContent=j;
+  row.appendChild(lbl);
+  HMAP_DATA[ji].forEach((v,hi)=>{
+    const c=document.createElement('div');c.className='hcell';
+    c.style.background=hcolor(v);c.title=`${j} ${hi}h : ${v} accidents`;
+    row.appendChild(c);
+  });
+  hmGrid.appendChild(row);
+});
+
+// Embouteillages
+const embH=[...Array(24)].map((_,i)=>i+'h');
+const embYde=[5,3,2,2,4,15,42,68,55,30,22,35,48,38,25,20,28,55,72,65,40,25,14,8];
+const embDla=[6,4,3,2,5,18,48,75,62,35,28,40,52,44,30,24,32,60,80,72,48,30,18,10];
+
+new Chart(document.getElementById('cEmbYde'),{type:'line',
+  data:{labels:embH,datasets:[{label:'Durée embouteillage (min)',data:embYde,
+    borderColor:'#1d7de0',backgroundColor:'rgba(29,125,224,0.12)',borderWidth:2.5,
+    tension:0.4,fill:true,pointRadius:2,pointBackgroundColor:'#1d7de0'}]},
+  options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{font:{size:9}}},y:{grid:{color:gridColor},title:{display:true,text:'Minutes',font:{size:9}}}}}
+});
+new Chart(document.getElementById('cEmbDla'),{type:'line',
+  data:{labels:embH,datasets:[{label:'Durée embouteillage (min)',data:embDla,
+    borderColor:'#e63946',backgroundColor:'rgba(230,57,70,0.12)',borderWidth:2.5,
+    tension:0.4,fill:true,pointRadius:2,pointBackgroundColor:'#e63946'}]},
+  options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{font:{size:9}}},y:{grid:{color:gridColor},title:{display:true,text:'Minutes',font:{size:9}}}}}
+});
+
+// ══════════ ENGINS CHARTS ══════════
+document.getElementById('enginsViz').innerHTML=ENGINS.map(e=>`
+  <div class="enrow">
+    <div class="enname">${e.nom}</div>
+    <div class="enbar-w"><div class="enbar" style="width:${e.pct}%;background:${e.pct>30?'linear-gradient(90deg,#e63946,#f97316)':e.pct>10?'linear-gradient(90deg,#f4a225,#fbbf24)':'linear-gradient(90deg,#1d7de0,#2ec4f3)'};"></div></div>
+    <div class="enpct">${e.pct}%</div>
+  </div>`).join('');
+
+new Chart(document.getElementById('cEnginsPie'),{type:'pie',
+  data:{labels:ENGINS.map(e=>e.nom),datasets:[{data:ENGINS.map(e=>e.pct),
+    backgroundColor:['#e63946','#1d7de0','#f4a225','#2ec4f3','#0fba81','#a78bfa','#6b7280'],
+    borderColor:'#091d35',borderWidth:2}]},
+  options:{responsive:true,plugins:{legend:{position:'right',labels:{font:{size:10},padding:8}}}}
+});
+
+new Chart(document.getElementById('cCauses'),{type:'bar',
+  data:{labels:CAUSES,datasets:[{label:'Fréquence (%)',data:CAUSES_PCT,
+    backgroundColor:'rgba(29,125,224,0.6)',borderColor:'#1d7de0',borderWidth:2,borderRadius:3}]},
+  options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:gridColor},title:{display:true,text:'% des accidents',font:{size:9}}},y:{grid:{color:gridColor},ticks:{font:{size:10}}}}}
+});
+
+new Chart(document.getElementById('cCausesGrav'),{type:'bar',
+  data:{labels:CAUSES,datasets:[{label:'Taux mortalité (%)',data:CAUSES_MORT,
+    backgroundColor:'rgba(230,57,70,0.6)',borderColor:'#e63946',borderWidth:2,borderRadius:3}]},
+  options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:gridColor},title:{display:true,text:'% accidents mortels',font:{size:9}}},y:{grid:{color:gridColor},ticks:{font:{size:10}}}}}
+});
+
+new Chart(document.getElementById('cEnginsMort'),{type:'bar',
+  data:{labels:ENGINS.map(e=>e.nom),datasets:[{label:'Taux mortalité (%)',data:ENGINS.map(e=>e.mort),
+    backgroundColor:ENGINS.map(e=>e.mort>35?'rgba(230,57,70,0.7)':e.mort>20?'rgba(244,162,37,0.7)':'rgba(29,125,224,0.6)'),
+    borderColor:ENGINS.map(e=>e.mort>35?'#e63946':e.mort>20?'#f4a225':'#1d7de0'),
+    borderWidth:2,borderRadius:3}]},
+  options:{responsive:true,plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:gridColor},ticks:{font:{size:10}}},y:{grid:{color:gridColor},title:{display:true,text:'% accidents mortels',font:{size:9}},max:55}}}
+});
+
+// ══════════ UPLOAD / SAISIE ══════════
+const dz=document.getElementById('dropZone'),fi=document.getElementById('fileInput');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dg');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('dg'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dg');if(e.dataTransfer.files[0])uploadFile(e.dataTransfer.files[0]);});
+fi.addEventListener('change',()=>{if(fi.files[0])uploadFile(fi.files[0]);});
+
+function uploadFile(file){
+  showLoader();
+  const fd=new FormData();fd.append('file',file);
+  fetch('/upload',{method:'POST',body:fd})
+    .then(r=>r.json())
+    .then(d=>{hideLoader();d.error?showErr('uploadError',d.error):renderResults(d);})
+    .catch(()=>{hideLoader();showErr('uploadError','Erreur réseau.');});
+}
+
+let records=[];
+function addRecord(){
+  const v=document.getElementById('f_ville').value,vh=document.getElementById('f_vehicules').value;
+  if(!v||!vh){showErr('manualError','Remplissez au moins Ville et Véhicules.');return;}
+  hideErr('manualError');
+  records.push({Date:document.getElementById('f_date').value,Ville:v,Axe:document.getElementById('f_axe').value,
+    Type_route:document.getElementById('f_route').value,Heure:document.getElementById('f_heure').value,
+    Vehicules_impliques:vh,Blesses:document.getElementById('f_blesses').value||0,
+    Deces:document.getElementById('f_deces').value||0,Gravite:document.getElementById('f_gravite').value,
+    Engin:document.getElementById('f_engin').value,Cause:document.getElementById('f_cause').value,
+    Meteo:document.getElementById('f_meteo').value});
+  renderRec();
+  ['f_date','f_vehicules','f_blesses','f_deces','f_heure'].forEach(id=>document.getElementById(id).value='');
+  ['f_ville','f_axe','f_route','f_gravite','f_engin','f_cause','f_meteo'].forEach(id=>document.getElementById(id).value='');
+}
+function renderRec(){
+  document.getElementById('recordsList').innerHTML=records.map((r,i)=>
+    `<div class="recrow"><span>#${i+1}</span><span>${r.Ville} | ${r.Axe||'—'} | ${r.Heure||'—'}h | 🚗${r.Vehicules_impliques} | 🤕${r.Blesses} | ☠${r.Deces} | ${r.Gravite||'—'} | ${r.Engin||'—'}</span><button class="recdel" onclick="delRec(${i})">✕</button></div>`
+  ).join('');
+  document.getElementById('analyzeBtn').style.display=records.length>=2?'inline-flex':'none';
+  document.getElementById('clearBtn').style.display=records.length?'inline-flex':'none';
+}
+function delRec(i){records.splice(i,1);renderRec();}
+function clearRecords(){records=[];renderRec();document.getElementById('results').innerHTML='';}
+
+function analyzeManual(){
+  showLoader();
+  fetch('/manual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({records})})
+    .then(r=>r.json())
+    .then(d=>{hideLoader();d.error?showErr('manualError',d.error):renderResults(d);})
+    .catch(()=>{hideLoader();showErr('manualError','Erreur réseau.');});
+}
+
+function loadSample(){
+  showLoader();
+  fetch('/sample').then(r=>r.json()).then(d=>{hideLoader();renderResults(d);}).catch(()=>hideLoader());
+}
+
+// ══════════ RENDER RESULTS ══════════
+function renderResults(data){
+  const r=document.getElementById('results'),s=data.stats;
+  const pal=['#1d7de0','#2ec4f3','#e63946','#f4a225','#0fba81','#a78bfa'];
+  const kpiDefs=[
+    {k:'Vehicules_impliques',l:'Véhicules impliqués',u:'moy./accident',i:'🚗',c:'kb'},
+    {k:'Blesses',l:'Blessés',u:'moy./accident',i:'🤕',c:'ko'},
+    {k:'Deces',l:'Décès',u:'moy./accident',i:'☠️',c:'kr'},
+  ];
+  let kH=kpiDefs.filter(k=>s[k.k]).map(k=>`<div class="kcard ${k.c}"><div class="kico">${k.i}</div><div class="klbl">${k.l}</div><div class="kval">${s[k.k].mean}</div><div class="kunit">${k.u}</div></div>`).join('');
+  if(!kH) Object.entries(s).slice(0,3).forEach(([col,st],i)=>{const c=['kb','ko','kr'][i];const ic=['📊','📈','⚠️'][i];kH+=`<div class="kcard ${c}"><div class="kico">${ic}</div><div class="klbl">${col}</div><div class="kval">${st.mean}</div><div class="kunit">moyenne</div></div>`;});
+  kH+=`<div class="kcard kg"><div class="kico">📋</div><div class="klbl">Observations</div><div class="kval">${data.rows}</div><div class="kunit">enregistrements</div></div>`;
+
+  const tR=Object.entries(s).map(([col,st])=>`<tr><td class="stv">${col}</td><td>${st.count}</td><td class="stm">${st.mean}</td><td>${st.median}</td><td>${st.std}</td><td>${st.min}</td><td class="stmax">${st.max}</td><td>${st.q1}</td><td>${st.q3}</td></tr>`).join('');
+
+  const pH=data.columns.map(c=>`<th>${c}</th>`).join('');
+  const pR=data.preview.map(row=>`<tr>${data.columns.map(c=>{const v=row[c]!==undefined?row[c]:'—';let cl='';if(c==='Gravite'||c==='Gravité'){if(String(v).match(/Grave|Mortel/i))cl='sg';else if(String(v).match(/L.ger/i))cl='sl';else if(String(v).match(/Moyen/i))cl='sm';}return`<td class="${cl}">${v}</td>`;}).join('')}</tr>`).join('');
+
+  r.innerHTML=`
+    <div class="rh"><div class="rtitle">📊 Rapport d'analyse descriptive</div><div class="rmeta"><span class="rtag">📁 ${data.filename}</span><span class="rtag">📝 ${data.rows} lignes</span><span class="rtag">📋 ${data.columns.length} colonnes</span></div></div>
+    <div class="slabel">Indicateurs principaux</div>
+    <div class="kgrid">${kH}</div>
+    <div class="slabel">Statistiques descriptives complètes</div>
+    <div class="stwrap" style="margin-bottom:1.8rem"><table class="sttbl"><thead><tr><th>Variable</th><th>N</th><th>Moyenne</th><th>Médiane</th><th>Écart-type</th><th>Min</th><th>Max</th><th>Q1</th><th>Q3</th></tr></thead><tbody>${tR}</tbody></table></div>
+    <div class="slabel">Distributions des variables</div>
+    <div class="g2" id="cGrid"></div>
+    <div class="slabel">Aperçu des données (10 premières lignes)</div>
+    <div class="pvwrap"><table class="pvtbl"><thead><tr>${pH}</tr></thead><tbody>${pR}</tbody></table></div>
+  `;
+
+  const grid=document.getElementById('cGrid');
+  Object.entries(data.charts).forEach(([col,ch],idx)=>{
+    const card=document.createElement('div');card.className='ccard';
+    card.innerHTML=`<div class="ctitle">${col}</div><canvas id="rc_${idx}"></canvas>`;
+    grid.appendChild(card);
+    new Chart(document.getElementById('rc_'+idx),{type:'bar',data:{labels:ch.labels,datasets:[{label:col,data:ch.values,backgroundColor:pal[idx%pal.length]+'66',borderColor:pal[idx%pal.length],borderWidth:2,borderRadius:3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:gridColor},ticks:{font:{size:9}}},y:{grid:{color:gridColor}}}}});
+  });
+  r.scrollIntoView({behavior:'smooth'});
+}
+
+function showLoader(){document.getElementById('loader').classList.add('on');document.getElementById('results').innerHTML='';}
+function hideLoader(){document.getElementById('loader').classList.remove('on');}
+function showErr(id,msg){const e=document.getElementById(id);e.textContent='⚠ '+msg;e.classList.add('on');}
+function hideErr(id){document.getElementById(id).classList.remove('on');}
+</script>
+</body>
+</html>
