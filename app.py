@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, jsonify
 import pandas as pd
 import numpy as np
 import os
@@ -9,7 +9,6 @@ UPLOAD_FOLDER = '/tmp/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 ALLOWED_EXTENSIONS = {'csv', 'xlsx', 'xls'}
-
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
@@ -45,7 +44,8 @@ def df_to_charts(df, numeric_cols):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    with open('index.html', 'r', encoding='utf-8') as f:
+        return f.read()
 
 @app.route('/upload', methods=['POST'])
 def upload():
@@ -55,7 +55,7 @@ def upload():
     if file.filename == '':
         return jsonify({'error': 'Fichier vide'}), 400
     if not allowed_file(file.filename):
-        return jsonify({'error': 'Format non supporté (CSV, XLSX seulement)'}), 400
+        return jsonify({'error': 'Format non supporté'}), 400
     filename = secure_filename(file.filename)
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
@@ -92,21 +92,16 @@ def manual():
 def sample():
     np.random.seed(42)
     n = 150
-    villes = ['Yaoundé','Douala','Bafoussam','Garoua','Maroua','Bamenda','Ngaoundéré','Bertoua']
-    axes = ['N1 Yaoundé–Douala','N3 Yaoundé–Bafoussam','N1 Douala–Bafoussam','N6 Bafoussam–Bamenda','N14 Douala–Limbé','Urbaine Yaoundé','Urbaine Douala']
+    villes = ['Yaoundé','Douala','Bafoussam','Garoua','Maroua','Bamenda']
+    axes = ['N1 Yaoundé–Douala','N3 Yaoundé–Bafoussam','N6 Bafoussam–Bamenda','Urbaine Yaoundé','Urbaine Douala']
     gravites = ['Léger','Moyen','Grave','Mortel']
-    causes = ['Excès de vitesse','Alcool','Distraction','Mauvais état route','Défaillance mécanique','Surcharge']
+    causes = ['Excès de vitesse','Alcool','Distraction','Mauvais état route','Défaillance mécanique']
     engins = ['Moto-taxi','Véhicule léger','Camion lourd','Bus/Car','Minibus']
     df = pd.DataFrame({
-        'Ville': np.random.choice(villes, n),
-        'Axe': np.random.choice(axes, n),
-        'Heure': np.random.randint(0, 24, n),
         'Vehicules_impliques': np.random.randint(1, 6, n),
         'Blesses': np.random.randint(0, 10, n),
         'Deces': np.random.poisson(0.8, n),
-        'Gravite': np.random.choice(gravites, n, p=[0.35,0.30,0.25,0.10]),
-        'Engin': np.random.choice(engins, n, p=[0.43,0.22,0.14,0.09,0.12]),
-        'Cause': np.random.choice(causes, n),
+        'Heure': np.random.randint(0, 24, n),
     })
     stats, numeric_cols = compute_stats(df)
     charts = df_to_charts(df, numeric_cols)
